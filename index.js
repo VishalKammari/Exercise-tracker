@@ -38,20 +38,30 @@ const User = mongoose.model('User', userSchema)
 
 // 3. Routes
 // Create user
+app.use(express.urlencoded({ extended: true }))
+
+// Create User
 app.post('/api/users', async (req, res) => {
   try {
-    const user = new User({ username: req.body.username })
+    const username = req.body.username
+    if (!username) return res.status(400).json({ error: 'Username is required' })
+
+    const user = new User({ username })
     await user.save()
     res.json({ username: user.username, _id: user._id })
   } catch (err) {
-    res.send(err)
+    res.status(500).json({ error: err.message })
   }
 })
 
-// Get all users
+// Get All Users
 app.get('/api/users', async (req, res) => {
-  const users = await User.find({}, 'username _id')
-  res.json(users)
+  try {
+    const users = await User.find({}, 'username _id')
+    res.json(users) // will be an array of objects
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
 })
 
 // Add exercise
